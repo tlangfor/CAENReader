@@ -196,7 +196,7 @@ class RawTrigger:
 
         ymin, ymax = plt.ylim()
 
-        plt.ylim(ymax=ymax + (ymax-ymin)*.1)
+        plt.ylim(ymax=ymax + (ymax-ymin)*.15)
 
         plt.xlabel('Samples')
         plt.ylabel('Channel')

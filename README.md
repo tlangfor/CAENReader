@@ -42,4 +42,6 @@ The most basic usage of this code is to extract a trigger from a binary file `wa
     trigger = dataFile.getNextTrigger()
     trigger.display()
     
-This will produce a plot of every trace included in this trigger. If zero suppression is being used, empty traces will not be plotted. For traces with ZLE, the "interesting" parts of the traces are plotted in their correct position.   
+This will produce a plot of every trace included in this trigger. If zero suppression is being used, empty traces will not be plotted. For traces with ZLE, the "interesting" parts of the traces are plotted in their correct position.
+
+The user is able to perform specific analysis on the traces as needed.    
