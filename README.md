@@ -32,7 +32,7 @@ This class is a container of the information stored in one trigger:
 - File position
 - Dictionary of the traces 
 
-There is one method, `display`, that uses matplotlib to plot the traces. The event information is displayed in the legend.
+There is one method, `display`, that uses matplotlib to plot the traces. The event information is displayed in a text box.
 
 
 ## Usage
