@@ -31,8 +31,7 @@ class DataFile:
 
         # Instantize a RawTrigger object
         trigger = RawTrigger()
-        # Fill the file name and position
-        trigger.fileName = self.fileName
+        # Fill the file position
         trigger.filePos = self.file.tell()
 
         # Read the 4 long-words of the event header
@@ -81,7 +80,7 @@ class DataFile:
         trigger.triggerTimeTag += self.timeTagRollover*(2**31)
 
         # convert from ticks to us since the beginning of the file
-        trigger.triggerTimeTag *= 8e-3
+        trigger.triggerTime = trigger.triggerTimeTag * 8e-3
 
         # Calculate length of each trace, using eventSize (in long words) and removing the 4 long words from the header
         size = int(4 * eventSize - 16L)
@@ -176,7 +175,6 @@ class RawTrigger:
         trigger in the raw data.
         """
         self.traces = {}
-        self.fileName = ''
         self.filePos = 0
         self.triggerTimeTag = 0.
         self.triggerTime = 0.
@@ -188,6 +186,10 @@ class RawTrigger:
         A method to display any or all the traces in the RawTrigger object
         :param trName: string or list, name of trace to be displayed
         """
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
         if trName is None:
             for trace in self.traces.iteritems():
                 plt.plot(trace[1], label=trace[0])
@@ -197,7 +199,20 @@ class RawTrigger:
             elif isinstance(trName, list):
                 for t in trName:
                     plt.plot(self.traces[t], label=t)
-        plt.legend(loc=0)
+        ax.legend(loc=0)
+
+        # place a text box in upper left in axes coords with details of event
+        textstr = 'File Position: {}\nTrigger Time (us): {}\nEvent Counter: {}'\
+            .format(self.filePos, self.triggerTime, self.eventCounter)
+
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10,
+                verticalalignment='top', bbox=dict(facecolor='white', alpha=0.7))
+
+        ymin, ymax = plt.ylim()
+
+        plt.ylim(ymax=ymax + (ymax-ymin)*.1)
+
         plt.xlabel('Samples')
         plt.ylabel('Channel')
         plt.grid()
+
