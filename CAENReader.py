@@ -1,8 +1,5 @@
 
-from time import time, strptime, mktime, localtime
-import struct
-from numpy import nan, sum
-from numpy import zeros, fromfile, dtype
+from numpy import nan, zeros, fromfile, dtype
 from os import path
 import matplotlib.pylab as plt
 
@@ -12,96 +9,16 @@ import matplotlib.pylab as plt
 
 
 class DataFile:
-    def __init__(self, fileName, numCh=4, DAQ="WaveDump"):
+    def __init__(self, fileName):
         """
         Initializes the dataFile instance to include the fileName, access time,
         and the number of boards in the file. Also opens the file for reading.
         """
         self.fileName = path.abspath(fileName)
-        self.file = open(self.fileName, 'r')
-        self.accessTime = time()
-        self.headerArr = []
+        self.file = open(self.fileName, 'rb')
         self.recordLen = 0
-        self.series = 0
-        self.fileNumber = 0
-        self.dateTime = 0
-        self.startTime = 0
-        self.stopTime = 0
         self.oldTimeTag = 0.
         self.timeTagRollover = 0
-        self.numCh = numCh
-        self.DAQ = DAQ
-
-    def readHeader(self):
-        """
-        The .dat file has a headerSize defined by a 4 byte control word at the beginning of the file.
-        This control word lists the number of 32bit long words in the header, but python needs bytes, so we convert
-        by multiplying by 4 and then subtract off the length of the control word itself.
-
-        This function sets values for:
-        1. The recordLen, which is the length of data (in samples) recorded for one trigger,
-        2. A time tuple containing the full start time of the data set (self.dateTime)
-        Also set is an array that contains the entire header.
-        """
-
-        # If the data were collected with the CAEN DAQ (a GUI to control V1720 digitizers writen by CR Heimbach, NIST)
-        if self.DAQ == "CAEN":
-
-            # Read and unpack the 4-long word key that describes the length of the header
-            h0 = self.file.read(4)
-            (i0,) = struct.unpack('I', h0)
-
-            # In .dat file, size is listed in number of 32 bit long words, python needs bytes.
-            # Also subtracting off the binary control word
-            headerSize = (i0 - 0xb0000000) * 4 - 4
-
-            # Read the full header
-            header = self.file.read(headerSize)
-
-            # Split the header into an array by the new-lines
-            self.headerArr = header.split('\n')
-
-            # Initialize the three items we extract from the header: recordLength, startTime, startDate
-            self.recordLen = 0
-            startTime = ""
-            startDate = ""
-
-            # Search through the header (line-by-line) for these three parameters
-            for line in self.headerArr:
-                tmp = line.split()
-                if len(tmp) > 0:
-                    if tmp[0] == "DATE(M/D/Y)":
-                        startDate = tmp[1]
-                    if tmp[0] == "TIME":
-                        startTime = tmp[1]
-                    if tmp[0] == "RECORD_LENGTH":
-                        self.recordLen = int(tmp[1])
-
-            # Try to convert the string date/time into a struct_time object. If that fails, use the ctime of the file
-            try:
-                self.dateTime = strptime(startDate + " " + startTime, "%m/%d/%Y %H:%M:%S")
-            except ValueError:
-                self.dateTime = localtime(path.getctime(self.fileName))
-
-        # If the data were collected with WaveDump, which at the moment does not have a file header.
-        elif self.DAQ == "WaveDump":
-
-            # Try to parse the filename into a date/time string, which can then be converted to a struct_time.
-            # Otherwise, use the ctime of the file. WARNING: If the file is transferred without the archive flag,
-            # the ctime will not be correct.
-            try:
-                shortName = self.fileName.split('/')[-1]
-
-                # Expect new P50A fileName format of: s#_f#_ts<epoch>.dat
-
-                self.series = int(shortName.split('_')[0][1:])
-                self.fileNumber = int(shortName.split('_')[1][1:])
-                self.startTime = float(shortName.split('_')[-1][2:-3])
-                self.dateTime = localtime(self.startTime)
-
-            except ValueError:
-                self.startTime = path.getctime(self.fileName)
-                self.dateTime = localtime(self.startTime)
 
     def getNextTrigger(self):
 
@@ -153,7 +70,7 @@ class DataFile:
         trigger.triggerTimeTag = i3
 
         # Since the trigger time tag is only 32 bits, it rolls over frequently. This checks for the roll-over
-        trigger.deltaTS = (float(i3) - self.oldTimeTag) * 8.e-9
+
         if i3 < self.oldTimeTag:
             self.timeTagRollover += 1
             self.oldTimeTag = float(i3)
@@ -162,11 +79,9 @@ class DataFile:
 
         # correcting triggerTimeTag for rollover
         trigger.triggerTimeTag += self.timeTagRollover*(2**31)
-        # convert from ticks to us
-        # trigger.triggerTimeTag *= 8e-3
 
-        # absolute time (epoch) using the data/time in header
-        trigger.triggerTime = float(mktime(self.dateTime))+float(self.timeTagRollover*(2**31)*8e-9)+float(i3)*8e-9
+        # convert from ticks to us since the beginning of the file
+        trigger.triggerTimeTag *= 8e-3
 
         # Calculate length of each trace, using eventSize (in long words) and removing the 4 long words from the header
         size = int(4 * eventSize - 16L)
@@ -237,9 +152,9 @@ class DataFile:
         self.file.seek(filePos)
 
         # use the getNextTrigger method to read the specified event into memory
-        trig = self.getNextTrigger()
+        trigger = self.getNextTrigger()
 
-        return trig
+        return trigger
 
     def close(self):
         """
@@ -271,15 +186,18 @@ class RawTrigger:
 
         """
         A method to display any or all the traces in the RawTrigger object
-        :param trName: string, name of trace to be displayed
+        :param trName: string or list, name of trace to be displayed
         """
         if trName is None:
             for trace in self.traces.iteritems():
                 plt.plot(trace[1], label=trace[0])
         else:
-            for t in trName:
-                plt.plot(self.traces[t], label=t)
+            if isinstance(trName, str):
+                plt.plot(self.traces[trName], label=trName)
+            elif isinstance(trName, list):
+                for t in trName:
+                    plt.plot(self.traces[t], label=t)
         plt.legend(loc=0)
-        plt.xlabel('Time (samples)')
+        plt.xlabel('Samples')
         plt.ylabel('Channel')
         plt.grid()
