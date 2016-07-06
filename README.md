@@ -7,22 +7,20 @@ The binary format produced by CAEN digitizers (via WaveDump or similar DAQ softw
 
 ## Contents
 
-### Class: DataFile
+### Class: `DataFile`
 
-This class is the connection to the raw binary data. Initializing the
+This class is the connection to the raw binary data. 
 
-The getNextTrigger method is designed to be flexible and extract all information from the event header along with unpacking the traces into numpy arrays. 
+The `getNextTrigger` method is designed to be flexible and extract all information from the event header along with unpacking the traces into numpy arrays. 
 
-
-
-### Class: RawTrigger
+### Class: `RawTrigger`
 
 This class is a container of the information stored in one trigger: 
 
-- Trigger Time Tag
+- Trigger Time Tag (clock ticks from event header)
 - Time of event since beginning of the file (in microseconds)
-- Event Counter
+- Event Counter (from event header)
 - File position
 - Dictionary of the traces 
 
-There is one method, display, that uses matplotlib to plot the traces. The event information is displayed in the legend.
+There is one method, `display`, that uses matplotlib to plot the traces. The event information is displayed in the legend.

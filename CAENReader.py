@@ -141,20 +141,6 @@ class DataFile:
 
         return trigger
 
-    def getTrigger(self, filePos):
-        """
-        Seeks to the file position of a given trigger, reads that trigger, and then returns it.
-        :param filePos: The file position of the beginning of the desired event.
-        :return: The trigger object read.
-        """
-        # move to the file position where the event begins
-        self.file.seek(filePos)
-
-        # use the getNextTrigger method to read the specified event into memory
-        trigger = self.getNextTrigger()
-
-        return trigger
-
     def close(self):
         """
         Close the open data file. Helpful when doing on-the-fly testing
