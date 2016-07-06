@@ -191,7 +191,7 @@ class RawTrigger:
         ax = fig.add_subplot(111)
 
         if trName is None:
-            for trace in self.traces.iteritems():
+            for trace in sorted(self.traces.iteritems()):
                 plt.plot(trace[1], label=trace[0])
         else:
             if isinstance(trName, str):

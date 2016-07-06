@@ -9,7 +9,11 @@ The binary format produced by CAEN digitizers (via WaveDump or similar DAQ softw
 
 ### Class: DataFile
 
-This class is the connection to the raw binary data. The main method is getNextTrigger, which parses one trigger from the data file and returns a RawTrigger object. 
+This class is the connection to the raw binary data. Initializing the
+
+The getNextTrigger method is designed to be flexible and extract all information from the event header along with unpacking the traces into numpy arrays. 
+
+
 
 ### Class: RawTrigger
 
