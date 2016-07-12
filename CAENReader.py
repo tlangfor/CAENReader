@@ -50,10 +50,14 @@ class DataFile:
 
         # extract the board ID and channel map from the second header long-word
         boardId = (i1 & 0xf8000000) >> 27
-        channelUse = i1 & 0x000000ff
+
+        # For 16ch boards, the channelMask is split over two header words, ref: Tab. 8.2 in V1730 manual
+        # To get the second half of the channelMask to line up properly with the first, we only shift it by
+        # 16bits instead of 24.
+        channelUse = (i1 & 0x000000ff) + ((i2 & 0xff000000) >> 16)
 
         # convert channel map into an array of 0's or 1's indicating which channels are in use
-        whichChan = [1 if (channelUse & 1 << k) else 0 for k in range(0, 8)]
+        whichChan = [1 if (channelUse & 1 << k) else 0 for k in range(16)]
 
         # determine the number of channels that are in the event by summing whichChan
         numChannels = int(sum(whichChan))
