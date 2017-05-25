@@ -9,7 +9,7 @@ import matplotlib.pylab as plt
 
 
 class DataFile:
-    def __init__(self, fileName):
+    def __init__(self, fileName, DAQ='WaveDump'):
         """
         Initializes the dataFile instance to include the fileName, access time,
         and the number of boards in the file. Also opens the file for reading.
@@ -19,6 +19,7 @@ class DataFile:
         self.recordLen = 0
         self.oldTimeTag = 0.
         self.timeTagRollover = 0
+        self.DAQ = DAQ
 
     def getNextTrigger(self):
 
@@ -35,6 +36,7 @@ class DataFile:
         trigger.filePos = self.file.tell()
 
         # Read the 4 long-words of the event header
+
         try:
             i0, i1, i2, i3 = fromfile(self.file, dtype='I', count=4)
         except ValueError:
@@ -87,7 +89,7 @@ class DataFile:
         trigger.triggerTime = trigger.triggerTimeTag * 8e-3
 
         # Calculate length of each trace, using eventSize (in long words) and removing the 4 long words from the header
-        size = int(4 * eventSize - 16L)
+        size = int(4 * eventSize - 16)
 
         # looping over the entries in the whichChan list, only reading data if the entry is 1
         for ind, k in enumerate(whichChan):
@@ -181,7 +183,7 @@ class RawTrigger:
         ax = fig.add_subplot(111)
 
         if trName is None:
-            for trace in sorted(self.traces.iteritems()):
+            for trace in sorted(self.traces.items()):
                 plt.plot(trace[1], label=trace[0])
         else:
             if isinstance(trName, str):
