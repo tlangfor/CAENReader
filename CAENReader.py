@@ -103,7 +103,7 @@ class DataFile:
                     dt = dtype('<H')
 
                     # Use numpy's fromfile to read binary data and convert into a numpy array all at once
-                    trace = fromfile(self.file, dtype=dt, count=size/(2*numChannels))
+                    trace = fromfile(self.file, dtype=dt, count=size//(2*numChannels))
                 else:
                     # initialize an array of length self.recordLen, then set all values to nan
                     trace = zeros(self.recordLen)
@@ -207,4 +207,3 @@ class RawTrigger:
         plt.xlabel('Samples')
         plt.ylabel('Channel')
         plt.grid()
-
