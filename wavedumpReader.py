@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from numpy import fromfile, dtype, array
+from numpy import fromfile, dtype, array, uint64
 from os import path
 import matplotlib.pylab as plt
 
@@ -66,7 +66,7 @@ class DataFile:
         trigger.pattern = i2
         trigger.channel = i3
         trigger.eventCounter = i4
-        trigger.triggerTimeTag = i5
+        trigger.triggerTimeTag = uint64(i5)
 
         if trigger.triggerTimeTag < self.oldTimeTag:
             self.timeTagRollover += 1
