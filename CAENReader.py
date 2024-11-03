@@ -1,5 +1,5 @@
 
-from numpy import nan, zeros, fromfile, dtype
+from numpy import nan, uint64, zeros, fromfile, dtype
 from os import path
 import matplotlib.pylab as plt
 
@@ -72,7 +72,7 @@ class DataFile:
         trigger.eventCounter = i2 & eventCounterMask
 
         # The trigger time-tag (timestamp) is the entire fourth long-word
-        trigger.triggerTimeTag = i3
+        trigger.triggerTimeTag = uint64(i3)
 
         # Since the trigger time tag is only 32 bits, it rolls over frequently. This checks for the roll-over
 
